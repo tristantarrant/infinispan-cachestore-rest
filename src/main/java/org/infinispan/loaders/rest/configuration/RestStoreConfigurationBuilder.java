@@ -1,9 +1,7 @@
 package org.infinispan.loaders.rest.configuration;
 
-import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.loaders.rest.RestCacheStore;
 import org.infinispan.loaders.rest.logging.Log;
 import org.infinispan.loaders.rest.metadata.EmbeddedMetadataHelper;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
@@ -12,14 +10,14 @@ import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.util.logging.LogFactory;
 
 /**
- * RestCacheStoreConfigurationBuilder. Configures a {@link RestCacheStore}
+ * RestStoreConfigurationBuilder. Configures a {@link org.infinispan.loaders.rest.RestStore}
  *
  * @author Tristan Tarrant
  * @since 6.0
  */
-public class RestCacheStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<RestCacheStoreConfiguration, RestCacheStoreConfigurationBuilder> implements
-      RestCacheStoreConfigurationChildBuilder<RestCacheStoreConfigurationBuilder> {
-   private static final Log log = LogFactory.getLog(RestCacheStoreConfigurationBuilder.class, Log.class);
+public class RestStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<RestStoreConfiguration, RestStoreConfigurationBuilder> implements
+                                                                                                                                            RestStoreConfigurationChildBuilder<RestStoreConfigurationBuilder> {
+   private static final Log log = LogFactory.getLog(RestStoreConfigurationBuilder.class, Log.class);
    private final ConnectionPoolConfigurationBuilder connectionPool;
    private String key2StringMapper = MarshalledValueOrPrimitiveMapper.class.getName();
    private String metadataHelper = EmbeddedMetadataHelper.class.getName();
@@ -28,13 +26,13 @@ public class RestCacheStoreConfigurationBuilder extends AbstractStoreConfigurati
    private int port = 80;
    private boolean appendCacheNameToPath = false;
 
-   public RestCacheStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
+   public RestStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
       super(builder);
       connectionPool = new ConnectionPoolConfigurationBuilder(this);
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder self() {
+   public RestStoreConfigurationBuilder self() {
       return this;
    }
 
@@ -44,63 +42,63 @@ public class RestCacheStoreConfigurationBuilder extends AbstractStoreConfigurati
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder host(String host) {
+   public RestStoreConfigurationBuilder host(String host) {
       this.host = host;
       return this;
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder key2StringMapper(String key2StringMapper) {
+   public RestStoreConfigurationBuilder key2StringMapper(String key2StringMapper) {
       this.key2StringMapper = key2StringMapper;
       return this;
    }
 
 
    @Override
-   public RestCacheStoreConfigurationBuilder key2StringMapper(Class<? extends MarshallingTwoWayKey2StringMapper> klass) {
+   public RestStoreConfigurationBuilder key2StringMapper(Class<? extends MarshallingTwoWayKey2StringMapper> klass) {
       this.key2StringMapper = klass.getName();
       return this;
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder metadataHelper(String metadataHelper) {
+   public RestStoreConfigurationBuilder metadataHelper(String metadataHelper) {
       this.metadataHelper = metadataHelper;
       return this;
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder metadataHelper(Class<? extends MetadataHelper> metadataHelper) {
+   public RestStoreConfigurationBuilder metadataHelper(Class<? extends MetadataHelper> metadataHelper) {
       this.metadataHelper = metadataHelper.getName();
       return this;
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder path(String path) {
+   public RestStoreConfigurationBuilder path(String path) {
       this.path = path;
       return this;
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder port(int port) {
+   public RestStoreConfigurationBuilder port(int port) {
       this.port = port;
       return this;
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder appendCacheNameToPath(boolean appendCacheNameToPath) {
+   public RestStoreConfigurationBuilder appendCacheNameToPath(boolean appendCacheNameToPath) {
       this.appendCacheNameToPath = appendCacheNameToPath;
       return this;
    }
 
    @Override
-   public RestCacheStoreConfiguration create() {
-      return new RestCacheStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications, async.create(),
+   public RestStoreConfiguration create() {
+      return new RestStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications, async.create(),
                                              singletonStore.create(), preload, shared, properties, connectionPool.create(),
                                              key2StringMapper, metadataHelper, host, port, path, appendCacheNameToPath);
    }
 
    @Override
-   public RestCacheStoreConfigurationBuilder read(RestCacheStoreConfiguration template) {
+   public RestStoreConfigurationBuilder read(RestStoreConfiguration template) {
       this.connectionPool.read(template.connectionPool());
       this.host = template.host();
       this.port = template.port();

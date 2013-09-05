@@ -28,7 +28,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       cacheManager = TestCacheManagerFactory.fromXml(CACHE_LOADER_CONFIG);
       List<StoreConfiguration> cacheLoaders = cacheManager.getDefaultCacheConfiguration().persistence().stores();
       assertEquals(1, cacheLoaders.size());
-      RestCacheStoreConfiguration store = (RestCacheStoreConfiguration) cacheLoaders.get(0);
+      RestStoreConfiguration store = (RestStoreConfiguration) cacheLoaders.get(0);
       assertFalse(store.appendCacheNameToPath());
       assertEquals("localhost", store.host());
       assertEquals("/rest/___defaultcache/", store.path());

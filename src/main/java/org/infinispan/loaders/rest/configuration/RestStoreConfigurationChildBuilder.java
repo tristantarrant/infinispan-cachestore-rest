@@ -6,12 +6,12 @@ import org.infinispan.loaders.rest.metadata.MetadataHelper;
 import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 
 /**
- * RestCacheStoreConfigurationChildBuilder.
+ * RestStoreConfigurationChildBuilder.
  *
  * @author Tristan Tarrant
  * @since 6.0
  */
-public interface RestCacheStoreConfigurationChildBuilder<S> extends StoreConfigurationChildBuilder<S> {
+public interface RestStoreConfigurationChildBuilder<S> extends StoreConfigurationChildBuilder<S> {
 
    /**
     * Configures the connection pool
@@ -21,44 +21,44 @@ public interface RestCacheStoreConfigurationChildBuilder<S> extends StoreConfigu
    /**
     * The host to connect to
     */
-   RestCacheStoreConfigurationBuilder host(String  host);
+   RestStoreConfigurationBuilder host(String  host);
 
    /**
     * The class name of a {@link org.infinispan.persistence.keymappers.Key2StringMapper} to use for mapping keys to strings suitable for
     * RESTful retrieval/storage. Defaults to {@link org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper}
     */
-   RestCacheStoreConfigurationBuilder key2StringMapper(String key2StringMapper);
+   RestStoreConfigurationBuilder key2StringMapper(String key2StringMapper);
 
    /**
     * The class of a {@link org.infinispan.persistence.keymappers.Key2StringMapper} to use for mapping keys to strings suitable for
     * RESTful retrieval/storage. Defaults to {@link org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper}
     */
-   RestCacheStoreConfigurationBuilder key2StringMapper(Class<? extends MarshallingTwoWayKey2StringMapper> klass);
+   RestStoreConfigurationBuilder key2StringMapper(Class<? extends MarshallingTwoWayKey2StringMapper> klass);
 
    /**
     * The class name of a {@link MetadataHelper} to use for managing appropriate metadata for the entries
     * Defaults to {@link EmbeddedMetadataHelper}
     */
-   RestCacheStoreConfigurationBuilder metadataHelper(String metadataHelper);
+   RestStoreConfigurationBuilder metadataHelper(String metadataHelper);
 
    /**
     * The class of a {@link MetadataHelper} to use for managing appropriate metadata for the entries
     * Defaults to {@link EmbeddedMetadataHelper}
     */
-   RestCacheStoreConfigurationBuilder metadataHelper(Class<? extends MetadataHelper> metadataHelper);
+   RestStoreConfigurationBuilder metadataHelper(Class<? extends MetadataHelper> metadataHelper);
 
    /**
     * The path portion of the RESTful service. Defaults to /
     */
-   RestCacheStoreConfigurationBuilder path(String path);
+   RestStoreConfigurationBuilder path(String path);
 
    /**
     * The port to connect to. Defaults to 80
     */
-   RestCacheStoreConfigurationBuilder port(int port);
+   RestStoreConfigurationBuilder port(int port);
 
    /**
     * Determines whether to append the cache name to the path URI. Defaults to false.
     */
-   RestCacheStoreConfigurationBuilder appendCacheNameToPath(boolean appendCacheNameToPath);
+   RestStoreConfigurationBuilder appendCacheNameToPath(boolean appendCacheNameToPath);
 }

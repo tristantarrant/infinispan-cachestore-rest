@@ -10,7 +10,8 @@ import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
-import org.infinispan.loaders.rest.configuration.RestCacheStoreConfigurationBuilder;
+import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
+import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.loaders.rest.metadata.MimeMetadataHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.rest.EmbeddedRestServer;
@@ -46,7 +47,7 @@ public class RestUpgradeSynchronizerTest extends AbstractInfinispanTest {
       sourceServer = RestTestingUtil.startRestServer(sourceContainer);
 
       ConfigurationBuilder targetConfigurationBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false);
-      targetConfigurationBuilder.persistence().addStore(RestCacheStoreConfigurationBuilder.class).host("localhost").port(sourceServer.getPort())
+      targetConfigurationBuilder.persistence().addStore(RestStoreConfigurationBuilder.class).host("localhost").port(sourceServer.getPort())
             .path("/rest/" + BasicCacheContainer.DEFAULT_CACHE_NAME).metadataHelper(MimeMetadataHelper.class).locking().isolationLevel(IsolationLevel.NONE);
 
       targetContainer = TestCacheManagerFactory.createCacheManager(targetConfigurationBuilder);

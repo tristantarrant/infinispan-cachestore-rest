@@ -1,7 +1,7 @@
 package org.infinispan.loaders.rest.configuration;
 
 import org.infinispan.Cache;
-import org.infinispan.loaders.rest.RestCacheStore;
+import org.infinispan.loaders.rest.RestStore;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.spi.CacheLoader;
 import org.infinispan.rest.EmbeddedRestServer;
@@ -43,7 +43,7 @@ public class RestCacheStoreConfigTest {
          public void call() {
             Cache<Object, Object> cache = cm.getCache();
             CacheLoader cacheLoader = TestingUtil.getCacheLoader(cache);
-            assertSame(RestCacheStore.class, cacheLoader.getClass());
+            assertSame(RestStore.class, cacheLoader.getClass());
 
             cache.put("k", "v");
 

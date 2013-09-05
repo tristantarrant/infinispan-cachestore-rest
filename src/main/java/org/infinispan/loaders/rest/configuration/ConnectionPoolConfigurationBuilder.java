@@ -27,7 +27,7 @@ import org.infinispan.commons.configuration.Builder;
  * @author Tristan Tarrant
  * @since 6.0
  */
-public class ConnectionPoolConfigurationBuilder extends AbstractRestCacheStoreConfigurationChildBuilder<RestCacheStoreConfigurationBuilder> implements
+public class ConnectionPoolConfigurationBuilder extends AbstractRestStoreConfigurationChildBuilder<RestStoreConfigurationBuilder> implements
       Builder<ConnectionPoolConfiguration> {
    private int connectionTimeout = 60000;
    private int maxConnectionsPerHost = 4;
@@ -37,7 +37,7 @@ public class ConnectionPoolConfigurationBuilder extends AbstractRestCacheStoreCo
    private int socketTimeout = 60000;
    private boolean tcpNoDelay = true;
 
-   ConnectionPoolConfigurationBuilder(RestCacheStoreConfigurationBuilder builder) {
+   ConnectionPoolConfigurationBuilder(RestStoreConfigurationBuilder builder) {
       super(builder);
    }
 

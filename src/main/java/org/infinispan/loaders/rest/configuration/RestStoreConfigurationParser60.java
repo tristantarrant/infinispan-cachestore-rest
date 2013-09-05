@@ -17,7 +17,7 @@ import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
 
 
 /**
- * RestCacheStoreConfigurationParser60.
+ * RestStoreConfigurationParser60.
  *
  * @author Tristan Tarrant
  * @since 6.0
@@ -26,9 +26,9 @@ import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
    @Namespace(uri = "urn:infinispan:config:store:rest:6.0", root = "restStore"),
    @Namespace(root = "restStore"),
 })
-public class RestCacheStoreConfigurationParser60 implements ConfigurationParser {
+public class RestStoreConfigurationParser60 implements ConfigurationParser {
 
-   public RestCacheStoreConfigurationParser60() {
+   public RestStoreConfigurationParser60() {
    }
 
    @Override
@@ -50,7 +50,7 @@ public class RestCacheStoreConfigurationParser60 implements ConfigurationParser 
 
    private void parseRestStore(final XMLExtendedStreamReader reader, PersistenceConfigurationBuilder loadersBuilder,
          ClassLoader classLoader) throws XMLStreamException {
-      RestCacheStoreConfigurationBuilder builder = new RestCacheStoreConfigurationBuilder(loadersBuilder);
+      RestStoreConfigurationBuilder builder = new RestStoreConfigurationBuilder(loadersBuilder);
       parseRestStoreAttributes(reader, builder, classLoader);
 
       while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -111,7 +111,7 @@ public class RestCacheStoreConfigurationParser60 implements ConfigurationParser 
       ParseUtils.requireNoContent(reader);
    }
 
-   private void parseRestStoreAttributes(XMLExtendedStreamReader reader, RestCacheStoreConfigurationBuilder builder, ClassLoader classLoader)
+   private void parseRestStoreAttributes(XMLExtendedStreamReader reader, RestStoreConfigurationBuilder builder, ClassLoader classLoader)
          throws XMLStreamException {
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          ParseUtils.requireNoNamespaceAttribute(reader, i);

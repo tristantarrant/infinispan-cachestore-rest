@@ -16,7 +16,7 @@ import org.apache.http.HttpHeaders;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.loaders.rest.configuration.ConnectionPoolConfiguration;
-import org.infinispan.loaders.rest.configuration.RestCacheStoreConfiguration;
+import org.infinispan.loaders.rest.configuration.RestStoreConfiguration;
 import org.infinispan.loaders.rest.logging.Log;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
 import org.infinispan.metadata.InternalMetadata;
@@ -47,18 +47,18 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * RestCacheStore.
+ * RestStore.
  *
  * @author Tristan Tarrant
  * @since 6.0
  */
 @ThreadSafe
-public class RestCacheStore implements AdvancedLoadWriteStore {
+public class RestStore implements AdvancedLoadWriteStore {
    private static final String MAX_IDLE_TIME_SECONDS = "maxIdleTimeSeconds";
    private static final String TIME_TO_LIVE_SECONDS = "timeToLiveSeconds";
-   private static final Log log = LogFactory.getLog(RestCacheStore.class, Log.class);
+   private static final Log log = LogFactory.getLog(RestStore.class, Log.class);
    private static final DateFormat RFC1123_DATEFORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
-   private volatile RestCacheStoreConfiguration configuration;
+   private volatile RestStoreConfiguration configuration;
    private HttpClient httpClient;
    private InternalEntryFactory iceFactory;
    private MarshallingTwoWayKey2StringMapper key2StringMapper;

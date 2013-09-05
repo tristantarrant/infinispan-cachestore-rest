@@ -4,7 +4,7 @@ import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.Util;
 import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.loaders.rest.RestCacheStore;
+import org.infinispan.loaders.rest.RestStore;
 import org.infinispan.loaders.rest.logging.Log;
 import org.infinispan.persistence.CacheLoaderException;
 import org.infinispan.persistence.PersistenceUtil;
@@ -34,10 +34,10 @@ public class RestTargetMigrator implements TargetMigrator {
       int threads = Runtime.getRuntime().availableProcessors();
       ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
       PersistenceManager loaderManager = cr.getComponent(PersistenceManager.class);
-      Set<RestCacheStore> stores = loaderManager.getStores(RestCacheStore.class);
+      Set<RestStore> stores = loaderManager.getStores(RestStore.class);
 
       final AtomicInteger count = new AtomicInteger(0);
-      for (RestCacheStore store : stores) {
+      for (RestStore store : stores) {
 
          Set<Object> keys;
          try {
@@ -79,6 +79,6 @@ public class RestTargetMigrator implements TargetMigrator {
    public void disconnectSource(Cache<Object, Object> cache) throws CacheException {
       ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
       PersistenceManager loaderManager = cr.getComponent(PersistenceManager.class);
-      loaderManager.disableStore(RestCacheStore.class.getName());
+      loaderManager.disableStore(RestStore.class.getName());
    }
 }

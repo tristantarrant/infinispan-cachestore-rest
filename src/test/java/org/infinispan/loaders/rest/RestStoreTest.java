@@ -5,7 +5,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.InternalEntryFactoryImpl;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.loaders.rest.configuration.RestCacheStoreConfigurationBuilder;
+import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.BaseCacheStoreTest;
 import org.infinispan.persistence.DummyLoaderContext;
@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
  * @since 6.0
  */
 @Test(testName = "loaders.remote.RemoteCacheStoreTest", groups = "functional")
-public class RestCacheStoreTest extends BaseCacheStoreTest {
+public class RestStoreTest extends BaseCacheStoreTest {
 
    private static final String REMOTE_CACHE = "remote-cache";
    private EmbeddedCacheManager localCacheManager;
@@ -41,18 +41,18 @@ public class RestCacheStoreTest extends BaseCacheStoreTest {
       localCacheManager.getCache(REMOTE_CACHE);
       restServer = RestTestingUtil.startRestServer(localCacheManager);
 
-      RestCacheStoreConfigurationBuilder storeConfigurationBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false).persistence()
-            .addStore(RestCacheStoreConfigurationBuilder.class);
+      RestStoreConfigurationBuilder storeConfigurationBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false).persistence()
+            .addStore(RestStoreConfigurationBuilder.class);
       storeConfigurationBuilder.host(restServer.getHost()).port(restServer.getPort()).path("/rest/" + REMOTE_CACHE);
       storeConfigurationBuilder.connectionPool().maxTotalConnections(10).maxConnectionsPerHost(10);
       storeConfigurationBuilder.validate();
-      RestCacheStore restCacheStore = new RestCacheStore();
-      restCacheStore.init(new DummyLoaderContext(storeConfigurationBuilder.create(), getCache(), getMarshaller()));
+      RestStore restStore = new RestStore();
+      restStore.init(new DummyLoaderContext(storeConfigurationBuilder.create(), getCache(), getMarshaller()));
       InternalEntryFactoryImpl iceFactory = new InternalEntryFactoryImpl();
       iceFactory.injectTimeService(TIME_SERVICE);
-      restCacheStore.setInternalCacheEntryFactory(iceFactory);
-      restCacheStore.start();
-      return restCacheStore;
+      restStore.setInternalCacheEntryFactory(iceFactory);
+      restStore.start();
+      return restStore;
    }
 
    @Override
