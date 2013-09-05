@@ -1,10 +1,10 @@
 package org.infinispan.loaders.rest;
 
 import org.infinispan.commons.api.BasicCacheContainer;
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
-import org.infinispan.loaders.BaseCacheStoreFunctionalTest;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.rest.configuration.RestCacheStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.BaseCacheStoreFunctionalTest;
 import org.infinispan.rest.EmbeddedRestServer;
 import org.infinispan.rest.RestTestingUtil;
 import org.infinispan.test.TestingUtil;
@@ -21,11 +21,18 @@ public class RestCacheStoreFunctionalTest extends BaseCacheStoreFunctionalTest {
    private EmbeddedCacheManager localCacheManager;
    private EmbeddedRestServer restServer;
 
+
+
+
    @Override
-   protected LoadersConfigurationBuilder createCacheStoreConfig(LoadersConfigurationBuilder loaders) {
+   protected PersistenceConfigurationBuilder createCacheStoreConfig(PersistenceConfigurationBuilder loaders, boolean preload) {
       localCacheManager = TestCacheManagerFactory.createCacheManager();
       restServer = RestTestingUtil.startRestServer(localCacheManager);
-      loaders.addStore(RestCacheStoreConfigurationBuilder.class).host("localhost").port(restServer.getPort()).path("/rest/"+BasicCacheContainer.DEFAULT_CACHE_NAME);
+      loaders.addStore(RestCacheStoreConfigurationBuilder.class)
+            .host("localhost")
+            .port(restServer.getPort())
+            .path("/rest/"+BasicCacheContainer.DEFAULT_CACHE_NAME)
+            .preload(preload);
       return loaders;
    }
 

@@ -8,6 +8,8 @@ import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 import org.infinispan.loaders.rest.RestCacheStore;
 
+import java.util.Properties;
+
 /**
  * RestCacheStoreConfiguration.
  *
@@ -26,10 +28,12 @@ public class RestCacheStoreConfiguration extends AbstractStoreConfiguration {
    private final String path;
    private final boolean appendCacheNameToPath;
 
-   RestCacheStoreConfiguration(ConnectionPoolConfiguration connectionPool, String key2StringMapper, String metadataHelper, String host, int port, String path, boolean appendCacheNameToPath,
-         boolean purgeOnStartup, boolean purgeSynchronously, int purgerThreads, boolean fetchPersistentState, boolean ignoreModifications, TypedProperties properties,
-         AsyncStoreConfiguration asyncStoreConfiguration, SingletonStoreConfiguration singletonStoreConfiguration) {
-      super(purgeOnStartup, purgeSynchronously, purgerThreads, fetchPersistentState, ignoreModifications, properties, asyncStoreConfiguration, singletonStoreConfiguration);
+   public RestCacheStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications,
+                                      AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore,
+                                      boolean preload, boolean shared, Properties properties,
+                                      ConnectionPoolConfiguration connectionPool, String key2StringMapper,
+                                      String metadataHelper, String host, int port, String path, boolean appendCacheNameToPath) {
+      super(purgeOnStartup, fetchPersistentState, ignoreModifications, async, singletonStore, preload, shared, properties);
       this.connectionPool = connectionPool;
       this.key2StringMapper = key2StringMapper;
       this.metadataHelper = metadataHelper;

@@ -30,13 +30,13 @@
 
    <default>
       <jmxStatistics enabled="false"/>
-      <loaders passivation="false" shared="true" preload="false">
+      <persistence passivation="false">
          <restStore xmlns="urn:infinispan:config:store:rest:6.0"
-            fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false"
-            key2StringMapper="org.infinispan.loaders.keymappers.MarshalledValueOrPrimitiveMapper" path="/rest/___defaultcache" host="localhost" port="18212" appendCacheNameToPath="false">
+            fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false" shared="true" preload="false"
+            key2StringMapper="org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper" path="/rest/___defaultcache" host="localhost" port="18212" appendCacheNameToPath="false">
             <connectionPool connectionTimeout="10000" maxConnectionsPerHost="10" maxTotalConnections="10" receiveBufferSize="20000" sendBufferSize="20000" socketTimeout="10000" tcpNoDelay="true"/>
          </restStore>
-      </loaders>
+      </persistence>
    </default>
 
 </infinispan>

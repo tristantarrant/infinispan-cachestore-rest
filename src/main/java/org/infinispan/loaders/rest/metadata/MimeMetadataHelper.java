@@ -2,15 +2,18 @@ package org.infinispan.loaders.rest.metadata;
 
 import java.util.concurrent.TimeUnit;
 
-import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.metadata.InternalMetadataImpl;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.persistence.spi.MarshalledEntry;
 import org.infinispan.rest.MimeMetadata;
 
 public class MimeMetadataHelper implements MetadataHelper {
 
    @Override
-   public String getContentType(InternalCacheEntry entry) {
-      MimeMetadata metadata = (MimeMetadata) entry.getMetadata();
+   public String getContentType(MarshalledEntry entry) {
+      //ugly, to be solved together with ISPN-3460
+      InternalMetadataImpl mei = (InternalMetadataImpl) entry.getMetadata();
+      MimeMetadata metadata = (MimeMetadata) mei.actual();
       return metadata.contentType();
    }
 

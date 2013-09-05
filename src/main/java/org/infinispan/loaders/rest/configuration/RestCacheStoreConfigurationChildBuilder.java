@@ -1,10 +1,9 @@
 package org.infinispan.loaders.rest.configuration;
 
 import org.infinispan.configuration.cache.StoreConfigurationChildBuilder;
-import org.infinispan.loaders.keymappers.Key2StringMapper;
-import org.infinispan.loaders.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.loaders.rest.metadata.EmbeddedMetadataHelper;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 
 /**
  * RestCacheStoreConfigurationChildBuilder.
@@ -25,14 +24,14 @@ public interface RestCacheStoreConfigurationChildBuilder<S> extends StoreConfigu
    RestCacheStoreConfigurationBuilder host(String  host);
 
    /**
-    * The class name of a {@link Key2StringMapper} to use for mapping keys to strings suitable for
-    * RESTful retrieval/storage. Defaults to {@link org.infinispan.loaders.keymappers.MarshalledValueOrPrimitiveMapper}
+    * The class name of a {@link org.infinispan.persistence.keymappers.Key2StringMapper} to use for mapping keys to strings suitable for
+    * RESTful retrieval/storage. Defaults to {@link org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper}
     */
    RestCacheStoreConfigurationBuilder key2StringMapper(String key2StringMapper);
 
    /**
-    * The class of a {@link Key2StringMapper} to use for mapping keys to strings suitable for
-    * RESTful retrieval/storage. Defaults to {@link org.infinispan.loaders.keymappers.MarshalledValueOrPrimitiveMapper}
+    * The class of a {@link org.infinispan.persistence.keymappers.Key2StringMapper} to use for mapping keys to strings suitable for
+    * RESTful retrieval/storage. Defaults to {@link org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper}
     */
    RestCacheStoreConfigurationBuilder key2StringMapper(Class<? extends MarshallingTwoWayKey2StringMapper> klass);
 

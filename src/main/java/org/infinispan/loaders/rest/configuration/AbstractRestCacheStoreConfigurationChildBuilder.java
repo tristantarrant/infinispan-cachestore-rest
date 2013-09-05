@@ -1,8 +1,8 @@
 package org.infinispan.loaders.rest.configuration;
 
 import org.infinispan.configuration.cache.AbstractStoreConfigurationChildBuilder;
-import org.infinispan.loaders.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 
 /**
  * AbstractRestCacheStoreConfigurationChildBuilder.

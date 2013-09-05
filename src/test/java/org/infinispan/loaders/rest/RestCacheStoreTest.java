@@ -3,13 +3,13 @@ package org.infinispan.loaders.rest;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.InternalEntryFactoryImpl;
+import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.loaders.BaseCacheStoreTest;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.rest.RestCacheStore;
 import org.infinispan.loaders.rest.configuration.RestCacheStoreConfigurationBuilder;
-import org.infinispan.loaders.spi.CacheStore;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.BaseCacheStoreTest;
+import org.infinispan.persistence.DummyLoaderContext;
+import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.rest.EmbeddedRestServer;
 import org.infinispan.rest.RestTestingUtil;
 import org.infinispan.test.TestingUtil;
@@ -30,7 +30,7 @@ public class RestCacheStoreTest extends BaseCacheStoreTest {
    private EmbeddedRestServer restServer;
 
    @Override
-   protected CacheStore createCacheStore() throws Exception {
+   protected AdvancedLoadWriteStore createStore() throws Exception {
       ConfigurationBuilder cb = TestCacheManagerFactory.getDefaultCacheConfiguration(false);
       cb.eviction().maxEntries(100).strategy(EvictionStrategy.UNORDERED).expiration().wakeUpInterval(10L);
 
@@ -41,13 +41,13 @@ public class RestCacheStoreTest extends BaseCacheStoreTest {
       localCacheManager.getCache(REMOTE_CACHE);
       restServer = RestTestingUtil.startRestServer(localCacheManager);
 
-      RestCacheStoreConfigurationBuilder storeConfigurationBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false).loaders()
-            .addLoader(RestCacheStoreConfigurationBuilder.class).purgeSynchronously(true);
+      RestCacheStoreConfigurationBuilder storeConfigurationBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false).persistence()
+            .addStore(RestCacheStoreConfigurationBuilder.class);
       storeConfigurationBuilder.host(restServer.getHost()).port(restServer.getPort()).path("/rest/" + REMOTE_CACHE);
       storeConfigurationBuilder.connectionPool().maxTotalConnections(10).maxConnectionsPerHost(10);
       storeConfigurationBuilder.validate();
       RestCacheStore restCacheStore = new RestCacheStore();
-      restCacheStore.init(storeConfigurationBuilder.create(), getCache(), getMarshaller());
+      restCacheStore.init(new DummyLoaderContext(storeConfigurationBuilder.create(), getCache(), getMarshaller()));
       InternalEntryFactoryImpl iceFactory = new InternalEntryFactoryImpl();
       iceFactory.injectTimeService(TIME_SERVICE);
       restCacheStore.setInternalCacheEntryFactory(iceFactory);
@@ -65,11 +65,11 @@ public class RestCacheStoreTest extends BaseCacheStoreTest {
    @Override
    protected void assertEventuallyExpires(String key) throws Exception {
       for (int i = 0; i < 10; i++) {
-         if (cs.load("k") == null)
+         if (cl.load("k") == null)
             break;
          Thread.sleep(1000);
       }
-      assert cs.load("k") == null;
+      assert cl.load("k") == null;
    }
 
    @Override
@@ -78,25 +78,21 @@ public class RestCacheStoreTest extends BaseCacheStoreTest {
    }
 
    @Override
-   protected void purgeExpired() throws CacheLoaderException {
+   protected void purgeExpired()  {
       localCacheManager.getCache().getAdvancedCache().getEvictionManager().processEviction();
    }
 
-   /**
-    * This is not supported, see assertion in {@link RemoteCacheStore#loadAllKeys(java.util.Set)}
-    */
-   @Override
-   public void testLoadKeys() throws CacheLoaderException {
-   }
 
    @Override
    public void testReplaceExpiredEntry() throws Exception {
-      cs.store(TestInternalCacheEntryFactory.create("k1", "v1", 100));
+      InternalCacheEntry ice = TestInternalCacheEntryFactory.create("k1", "v1", 100);
+      cl.write(TestingUtil.marshalledEntry(ice, getMarshaller()));
       // Hot Rod does not support milliseconds, so 100ms is rounded to the nearest second,
       // and so data is stored for 1 second here. Adjust waiting time accordingly.
       TestingUtil.sleepThread(1100);
-      assert null == cs.load("k1");
-      cs.store(TestInternalCacheEntryFactory.create("k1", "v2", 100));
-      assert cs.load("k1").getValue().equals("v2");
+      assert null == cl.load("k1");
+      InternalCacheEntry ice2 = TestInternalCacheEntryFactory.create("k1", "v2", 100);
+      cl.write(TestingUtil.marshalledEntry(ice2, getMarshaller()));
+      assert cl.load("k1").getValue().equals("v2");
    }
 }

@@ -6,7 +6,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ConfigurationParser;
 import org.infinispan.configuration.parsing.Namespace;
@@ -39,7 +39,7 @@ public class RestCacheStoreConfigurationParser60 implements ConfigurationParser 
       Element element = Element.forName(reader.getLocalName());
       switch (element) {
       case REST_STORE: {
-         parseRestStore(reader, builder.loaders(), holder.getClassLoader());
+         parseRestStore(reader, builder.persistence(), holder.getClassLoader());
          break;
       }
       default: {
@@ -48,7 +48,7 @@ public class RestCacheStoreConfigurationParser60 implements ConfigurationParser 
       }
    }
 
-   private void parseRestStore(final XMLExtendedStreamReader reader, LoadersConfigurationBuilder loadersBuilder,
+   private void parseRestStore(final XMLExtendedStreamReader reader, PersistenceConfigurationBuilder loadersBuilder,
          ClassLoader classLoader) throws XMLStreamException {
       RestCacheStoreConfigurationBuilder builder = new RestCacheStoreConfigurationBuilder(loadersBuilder);
       parseRestStoreAttributes(reader, builder, classLoader);
@@ -116,7 +116,8 @@ public class RestCacheStoreConfigurationParser60 implements ConfigurationParser 
       for (int i = 0; i < reader.getAttributeCount(); i++) {
          ParseUtils.requireNoNamespaceAttribute(reader, i);
          String value = replaceProperties(reader.getAttributeValue(i));
-         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+         String attributeName = reader.getAttributeLocalName(i);
+         Attribute attribute = Attribute.forName(attributeName);
          switch (attribute) {
          case APPEND_CACHE_NAME_TO_PATH: {
             builder.appendCacheNameToPath(Boolean.parseBoolean(value));
@@ -139,7 +140,7 @@ public class RestCacheStoreConfigurationParser60 implements ConfigurationParser 
             break;
          }
          default: {
-            Parser60.parseCommonStoreAttributes(reader, i, builder);
+            Parser60.parseCommonStoreAttributes(reader, builder, attributeName, value, i);
             break;
          }
          }

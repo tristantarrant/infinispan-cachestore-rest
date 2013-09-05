@@ -6,7 +6,7 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
 
-import org.infinispan.configuration.cache.CacheLoaderConfiguration;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
@@ -26,7 +26,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
 
    public void testRemoteCacheStore() throws Exception {
       cacheManager = TestCacheManagerFactory.fromXml(CACHE_LOADER_CONFIG);
-      List<CacheLoaderConfiguration> cacheLoaders = cacheManager.getDefaultCacheConfiguration().loaders().cacheLoaders();
+      List<StoreConfiguration> cacheLoaders = cacheManager.getDefaultCacheConfiguration().persistence().stores();
       assertEquals(1, cacheLoaders.size());
       RestCacheStoreConfiguration store = (RestCacheStoreConfiguration) cacheLoaders.get(0);
       assertFalse(store.appendCacheNameToPath());

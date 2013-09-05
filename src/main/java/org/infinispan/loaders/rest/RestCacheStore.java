@@ -1,20 +1,6 @@
 package org.infinispan.loaders.rest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import net.jcip.annotations.ThreadSafe;
-
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.Header;
@@ -27,20 +13,38 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.http.HttpHeaders;
-import org.infinispan.Cache;
-import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.util.Util;
-import org.infinispan.configuration.cache.CacheLoaderConfiguration;
 import org.infinispan.container.InternalEntryFactory;
-import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.loaders.rest.configuration.ConnectionPoolConfiguration;
 import org.infinispan.loaders.rest.configuration.RestCacheStoreConfiguration;
 import org.infinispan.loaders.rest.logging.Log;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
-import org.infinispan.loaders.spi.AbstractCacheStore;
+import org.infinispan.metadata.InternalMetadata;
+import org.infinispan.metadata.InternalMetadataImpl;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.persistence.CacheLoaderException;
+import org.infinispan.persistence.MarshalledEntryImpl;
+import org.infinispan.persistence.PersistenceUtil;
+import org.infinispan.persistence.TaskContextImpl;
+import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
+import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
+import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.MarshalledEntry;
 import org.infinispan.util.logging.LogFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * RestCacheStore.
@@ -49,7 +53,7 @@ import org.infinispan.util.logging.LogFactory;
  * @since 6.0
  */
 @ThreadSafe
-public class RestCacheStore extends AbstractCacheStore {
+public class RestCacheStore implements AdvancedLoadWriteStore {
    private static final String MAX_IDLE_TIME_SECONDS = "maxIdleTimeSeconds";
    private static final String TIME_TO_LIVE_SECONDS = "timeToLiveSeconds";
    private static final Log log = LogFactory.getLog(RestCacheStore.class, Log.class);
@@ -62,18 +66,19 @@ public class RestCacheStore extends AbstractCacheStore {
    private String path;
    private MetadataHelper metadataHelper;
    private URLCodec urlCodec = new URLCodec();
+   private InitializationContext ctx;
+
 
    @Override
-   public void init(CacheLoaderConfiguration config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException {
-      super.init(config, cache, m);
-      configuration = validateConfigurationClass(config, RestCacheStoreConfiguration.class);
+   public void init(InitializationContext initializationContext) {
+      configuration = initializationContext.getConfiguration();
+      ctx = initializationContext;
    }
 
    @Override
-   public void start() throws CacheLoaderException {
-      super.start();
+   public void start()   {
       if (iceFactory == null) {
-         iceFactory = cache.getAdvancedCache().getComponentRegistry().getComponent(InternalEntryFactory.class);
+         iceFactory = ctx.getCache().getAdvancedCache().getComponentRegistry().getComponent(InternalEntryFactory.class);
       }
       connectionManager = new MultiThreadedHttpConnectionManager();
 
@@ -95,21 +100,20 @@ public class RestCacheStore extends AbstractCacheStore {
       httpClient = new HttpClient(connectionManager);
       httpClient.getHostConfiguration().setHost(configuration.host(), configuration.port());
 
-      this.key2StringMapper = Util.getInstance(configuration.key2StringMapper(), cache.getAdvancedCache().getClassLoader());
-      this.key2StringMapper.setMarshaller(marshaller);
+      this.key2StringMapper = Util.getInstance(configuration.key2StringMapper(), ctx.getCache().getAdvancedCache().getClassLoader());
+      this.key2StringMapper.setMarshaller(ctx.getMarshaller());
       this.path = configuration.path();
       try {
          if (configuration.appendCacheNameToPath()) {
-            path = path + urlCodec.encode(cache.getName()) + "/";
+            path = path + urlCodec.encode(ctx.getCache().getName()) + "/";
          }
       } catch (EncoderException e) {
       }
-      this.metadataHelper = Util.getInstance(configuration.metadataHelper(), cache.getAdvancedCache().getClassLoader());
+      this.metadataHelper = Util.getInstance(configuration.metadataHelper(), ctx.getCache().getAdvancedCache().getClassLoader());
    }
 
    @Override
-   public void stop() throws CacheLoaderException {
-      super.stop();
+   public void stop()   {
       connectionManager.shutdown();
    }
 
@@ -120,7 +124,7 @@ public class RestCacheStore extends AbstractCacheStore {
       this.iceFactory = iceFactory;
    }
 
-   private String keyToUri(Object key) throws CacheLoaderException {
+   private String keyToUri(Object key)   {
       try {
          return path + urlCodec.encode(key2StringMapper.getStringMapping(key));
       } catch (EncoderException e) {
@@ -128,28 +132,30 @@ public class RestCacheStore extends AbstractCacheStore {
       }
    }
 
-   private byte[] marshall(String contentType, InternalCacheEntry entry) throws IOException, InterruptedException {
+   private byte[] marshall(String contentType, MarshalledEntry entry) throws IOException, InterruptedException {
       if (contentType.startsWith("text/")) {
          return (byte[]) entry.getValue();
       }
-      return getMarshaller().objectToByteBuffer(entry.getValue());
+      return ctx.getMarshaller().objectToByteBuffer(entry.getValue());
    }
 
    private Object unmarshall(String contentType, byte[] b) throws IOException, ClassNotFoundException {
       if (contentType.startsWith("text/")) {
          return new String(b); // TODO: use response header Content Encoding
       } else {
-         return getMarshaller().objectFromByteBuffer(b);
+         return ctx.getMarshaller().objectFromByteBuffer(b);
       }
    }
 
+
    @Override
-   public void store(InternalCacheEntry entry) throws CacheLoaderException {
+   public void write(MarshalledEntry entry) {
       PutMethod put = new PutMethod(keyToUri(entry.getKey()));
 
-      if (entry.canExpire()) {
-         put.setRequestHeader(TIME_TO_LIVE_SECONDS, Long.toString(timeoutToSeconds(entry.getLifespan())));
-         put.setRequestHeader(MAX_IDLE_TIME_SECONDS, Long.toString(timeoutToSeconds(entry.getMaxIdle())));
+      InternalMetadata metadata = entry.getMetadata();
+      if (metadata != null && metadata.expiryTime() > -1) {
+         put.setRequestHeader(TIME_TO_LIVE_SECONDS, Long.toString(timeoutToSeconds(metadata.lifespan())));
+         put.setRequestHeader(MAX_IDLE_TIME_SECONDS, Long.toString(timeoutToSeconds(metadata.maxIdle())));
       }
 
       try {
@@ -164,40 +170,7 @@ public class RestCacheStore extends AbstractCacheStore {
    }
 
    @Override
-   public void fromStream(ObjectInput inputStream) throws CacheLoaderException {
-      try {
-         while (true) {
-            InternalCacheEntry entry = (InternalCacheEntry) getMarshaller().objectFromObjectStream(inputStream);
-            if (entry == null)
-               break;
-            store(entry);
-         }
-      } catch (IOException e) {
-         throw new CacheLoaderException(e);
-      } catch (ClassNotFoundException e) {
-         throw new CacheLoaderException(e);
-      } catch (InterruptedException ie) {
-         if (log.isTraceEnabled())
-            log.trace("Interrupted while reading from stream");
-         Thread.currentThread().interrupt();
-      }
-   }
-
-   @Override
-   public void toStream(ObjectOutput outputStream) throws CacheLoaderException {
-      try {
-         Set<InternalCacheEntry> loadAll = loadAll();
-         for (InternalCacheEntry entry : loadAll) {
-            getMarshaller().objectToObjectStream(entry, outputStream);
-         }
-         getMarshaller().objectToObjectStream(null, outputStream);
-      } catch (IOException e) {
-         throw new CacheLoaderException(e);
-      }
-   }
-
-   @Override
-   public void clear() throws CacheLoaderException {
+   public void clear()   {
       DeleteMethod del = new DeleteMethod(path);
       try {
          httpClient.executeMethod(del);
@@ -210,7 +183,7 @@ public class RestCacheStore extends AbstractCacheStore {
    }
 
    @Override
-   public boolean remove(Object key) throws CacheLoaderException {
+   public boolean delete(Object key) {
       DeleteMethod del = new DeleteMethod(keyToUri(key));
       try {
          int status = httpClient.executeMethod(del);
@@ -224,7 +197,7 @@ public class RestCacheStore extends AbstractCacheStore {
    }
 
    @Override
-   public InternalCacheEntry load(Object key) throws CacheLoaderException {
+   public MarshalledEntry load(Object key)   {
       GetMethod get = new GetMethod(keyToUri(key));
       try {
          int status = httpClient.executeMethod(get);
@@ -233,9 +206,17 @@ public class RestCacheStore extends AbstractCacheStore {
             String contentType = get.getResponseHeader(HttpHeaders.CONTENT_TYPE).getValue();
             long ttl = timeHeaderToSeconds(get.getResponseHeader(TIME_TO_LIVE_SECONDS));
             long maxidle = timeHeaderToSeconds(get.getResponseHeader(MAX_IDLE_TIME_SECONDS));
-            return iceFactory.create(key, unmarshall(contentType, get.getResponseBody()),
-                  metadataHelper.buildMetadata(contentType, ttl, TimeUnit.SECONDS, maxidle, TimeUnit.SECONDS));
-         case HttpStatus.SC_NOT_FOUND:
+            Metadata metadata = metadataHelper.buildMetadata(contentType, ttl, TimeUnit.SECONDS, maxidle, TimeUnit.SECONDS);
+            InternalMetadata internalMetadata;
+            if (metadata.maxIdle() > -1 || metadata.lifespan() > -1) {
+               long now = ctx.getTimeService().wallClockTime();
+               internalMetadata = new InternalMetadataImpl(metadata, now, now);
+            } else {
+               internalMetadata = new InternalMetadataImpl(metadata, -1, -1);
+            }
+
+            return new MarshalledEntryImpl(key, unmarshall(contentType, get.getResponseBody()), internalMetadata, ctx.getMarshaller());
+            case HttpStatus.SC_NOT_FOUND:
             return null;
          default:
             throw log.httpError(get.getStatusText());
@@ -262,55 +243,89 @@ public class RestCacheStore extends AbstractCacheStore {
       return header == null ? -1 : Long.parseLong(header.getValue());
    }
 
-   @Override
-   public Set<InternalCacheEntry> loadAll() throws CacheLoaderException {
-      return load(Integer.MAX_VALUE);
-   }
 
    @Override
-   public Set<InternalCacheEntry> load(int numEntries) throws CacheLoaderException {
+   public void process(KeyFilter keyFilter, final CacheLoaderTask cacheLoaderTask, Executor executor, boolean loadValue, boolean loadMetadata) {
       GetMethod get = new GetMethod(path + "?global");
       get.addRequestHeader("Accept", "text/plain");
-      Set<InternalCacheEntry> entries = new HashSet<InternalCacheEntry>();
       try {
          httpClient.executeMethod(get);
          int count = 0;
+         int batchSize = 1000;
+         ExecutorCompletionService ecs = new ExecutorCompletionService(executor);
+         int tasks = 0;
+         final TaskContext taskContext = new TaskContextImpl();
          BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream(), get.getResponseCharSet()));
-         for (String key = reader.readLine(); key != null && count < numEntries; key = reader.readLine(), count++) {
-            entries.add(load(key));
+         Set<String> entries = new HashSet<String>(batchSize);
+         for (String key = reader.readLine(); key != null; key = reader.readLine(), count++) {
+            if (keyFilter == null || keyFilter.shouldLoadKey(key))
+               entries.add(key);
+            if (entries.size() == batchSize) {
+               final Set<String> batch = entries;
+               entries = new HashSet<String>(batchSize);
+               submitProcessTask(cacheLoaderTask, ecs, taskContext, batch, loadValue, loadMetadata);
+               tasks++;
+            }
          }
+         if (!entries.isEmpty()) {
+            submitProcessTask(cacheLoaderTask, ecs, taskContext, entries, loadValue, loadMetadata);
+            tasks++;
+         }
+         PersistenceUtil.waitForAllTasksToComplete(ecs, tasks);
       } catch (Exception e) {
          throw log.errorLoadingRemoteEntries(e);
       } finally {
          get.releaseConnection();
       }
+   }
 
-      return entries;
+   private void submitProcessTask(final CacheLoaderTask cacheLoaderTask, ExecutorCompletionService ecs,
+                                  final TaskContext taskContext, final Set<String> batch, final boolean loadEntry,
+                                  final boolean loadMetadata) {
+      ecs.submit(new Callable<Void>() {
+         @Override
+         public Void call() throws Exception {
+            for (Object key : batch) {
+               if (taskContext.isStopped())
+                  break;
+               if (!loadEntry && !loadMetadata) {
+                  cacheLoaderTask.processEntry(new MarshalledEntryImpl(key, (Object)null, null, ctx.getMarshaller()), taskContext);
+               } else {
+                  cacheLoaderTask.processEntry(load(key), taskContext);
+               }
+            }
+            return null;
+         }
+      });
    }
 
    @Override
-   public Set<Object> loadAllKeys(Set<Object> keysToExclude) throws CacheLoaderException {
-      GetMethod get = new GetMethod(path);
+   public void purge(Executor executor, PurgeListener purgeListener) {
+      // This should be handled by the remote server
+   }
+
+   @Override
+   public int size() {
+      GetMethod get = new GetMethod(path + "?global");
       get.addRequestHeader("Accept", "text/plain");
-      Set<Object> keys = new HashSet<Object>();
+
       try {
          httpClient.executeMethod(get);
          BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream(), get.getResponseCharSet()));
-         for (String key = reader.readLine(); key != null; key = reader.readLine()) {
-            if (!keysToExclude.contains(key))
-               keys.add(key);
-         }
+         int count = 0;
+         while (reader.readLine() != null)
+            count++;
+         return count;
       } catch (Exception e) {
+         throw log.errorLoadingRemoteEntries(e);
       } finally {
          get.releaseConnection();
       }
-
-      return keys;
    }
 
    @Override
-   protected void purgeInternal() throws CacheLoaderException {
-      // This should be handled by the remote server
+   public boolean contains(Object o) {
+      return load(o) != null;
    }
 
    private boolean isSuccessful(int status) {

@@ -26,7 +26,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
-import org.infinispan.loaders.CacheLoaderException;
+import org.infinispan.persistence.CacheLoaderException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;

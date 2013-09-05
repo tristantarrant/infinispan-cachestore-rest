@@ -1,23 +1,22 @@
 package org.infinispan.loaders.rest.upgrade;
 
-import java.util.List;
+import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
+import org.infinispan.commons.util.Util;
+import org.infinispan.factories.ComponentRegistry;
+import org.infinispan.loaders.rest.RestCacheStore;
+import org.infinispan.loaders.rest.logging.Log;
+import org.infinispan.persistence.CacheLoaderException;
+import org.infinispan.persistence.PersistenceUtil;
+import org.infinispan.persistence.manager.PersistenceManager;
+import org.infinispan.upgrade.TargetMigrator;
+import org.infinispan.util.logging.LogFactory;
+
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.infinispan.Cache;
-import org.infinispan.commons.CacheException;
-import org.infinispan.commons.util.InfinispanCollections;
-import org.infinispan.commons.util.Util;
-import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.manager.CacheLoaderManager;
-import org.infinispan.loaders.rest.RestCacheStore;
-import org.infinispan.loaders.rest.logging.Log;
-import org.infinispan.upgrade.TargetMigrator;
-import org.infinispan.util.logging.LogFactory;
 
 public class RestTargetMigrator implements TargetMigrator {
    private static final Log log = LogFactory.getLog(RestTargetMigrator.class, Log.class);
@@ -34,15 +33,15 @@ public class RestTargetMigrator implements TargetMigrator {
    public long synchronizeData(final Cache<Object, Object> cache) throws CacheException {
       int threads = Runtime.getRuntime().availableProcessors();
       ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
-      CacheLoaderManager loaderManager = cr.getComponent(CacheLoaderManager.class);
-      List<RestCacheStore> stores = loaderManager.getCacheLoaders(RestCacheStore.class);
+      PersistenceManager loaderManager = cr.getComponent(PersistenceManager.class);
+      Set<RestCacheStore> stores = loaderManager.getStores(RestCacheStore.class);
 
       final AtomicInteger count = new AtomicInteger(0);
       for (RestCacheStore store : stores) {
 
          Set<Object> keys;
          try {
-            keys = store.loadAllKeys(InfinispanCollections.emptySet());
+            keys = PersistenceUtil.toKeySet(store, null);
          } catch (CacheLoaderException e) {
             throw new CacheException(e);
          }
@@ -79,7 +78,7 @@ public class RestTargetMigrator implements TargetMigrator {
    @Override
    public void disconnectSource(Cache<Object, Object> cache) throws CacheException {
       ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
-      CacheLoaderManager loaderManager = cr.getComponent(CacheLoaderManager.class);
-      loaderManager.disableCacheStore(RestCacheStore.class.getName());
+      PersistenceManager loaderManager = cr.getComponent(PersistenceManager.class);
+      loaderManager.disableStore(RestCacheStore.class.getName());
    }
 }

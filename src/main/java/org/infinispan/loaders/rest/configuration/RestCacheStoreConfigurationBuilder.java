@@ -2,13 +2,13 @@ package org.infinispan.loaders.rest.configuration;
 
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
-import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
-import org.infinispan.loaders.keymappers.MarshalledValueOrPrimitiveMapper;
-import org.infinispan.loaders.keymappers.MarshallingTwoWayKey2StringMapper;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.rest.RestCacheStore;
 import org.infinispan.loaders.rest.logging.Log;
 import org.infinispan.loaders.rest.metadata.EmbeddedMetadataHelper;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper;
+import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.util.logging.LogFactory;
 
 /**
@@ -17,8 +17,7 @@ import org.infinispan.util.logging.LogFactory;
  * @author Tristan Tarrant
  * @since 6.0
  */
-public class RestCacheStoreConfigurationBuilder extends
-      AbstractStoreConfigurationBuilder<RestCacheStoreConfiguration, RestCacheStoreConfigurationBuilder> implements
+public class RestCacheStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<RestCacheStoreConfiguration, RestCacheStoreConfigurationBuilder> implements
       RestCacheStoreConfigurationChildBuilder<RestCacheStoreConfigurationBuilder> {
    private static final Log log = LogFactory.getLog(RestCacheStoreConfigurationBuilder.class, Log.class);
    private final ConnectionPoolConfigurationBuilder connectionPool;
@@ -29,7 +28,7 @@ public class RestCacheStoreConfigurationBuilder extends
    private int port = 80;
    private boolean appendCacheNameToPath = false;
 
-   public RestCacheStoreConfigurationBuilder(LoadersConfigurationBuilder builder) {
+   public RestCacheStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
       super(builder);
       connectionPool = new ConnectionPoolConfigurationBuilder(this);
    }
@@ -95,8 +94,9 @@ public class RestCacheStoreConfigurationBuilder extends
 
    @Override
    public RestCacheStoreConfiguration create() {
-      return new RestCacheStoreConfiguration(connectionPool.create(), key2StringMapper, metadataHelper, host, port, path, appendCacheNameToPath, purgeOnStartup, purgeSynchronously, purgerThreads, fetchPersistentState,
-            ignoreModifications, TypedProperties.toTypedProperties(properties), async.create(), singletonStore.create());
+      return new RestCacheStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications, async.create(),
+                                             singletonStore.create(), preload, shared, properties, connectionPool.create(),
+                                             key2StringMapper, metadataHelper, host, port, path, appendCacheNameToPath);
    }
 
    @Override
@@ -114,7 +114,8 @@ public class RestCacheStoreConfigurationBuilder extends
       ignoreModifications = template.ignoreModifications();
       properties = template.properties();
       purgeOnStartup = template.purgeOnStartup();
-      purgeSynchronously = template.purgeSynchronously();
+      shared = template.shared();
+      preload = template.preload();
       async.read(template.async());
       singletonStore.read(template.singletonStore());
       return this;

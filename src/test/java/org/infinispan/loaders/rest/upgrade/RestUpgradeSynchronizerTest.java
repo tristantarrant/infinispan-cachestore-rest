@@ -5,13 +5,11 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
-import org.infinispan.loaders.manager.CacheLoaderManager;
 import org.infinispan.loaders.rest.configuration.RestCacheStoreConfigurationBuilder;
 import org.infinispan.loaders.rest.metadata.MimeMetadataHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -27,7 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.testng.AssertJUnit.*;
+import static org.testng.AssertJUnit.assertEquals;
 
 @Test(testName = "loaders.rest.upgrade.RestUpgradeSynchronizerTest", groups = "functional")
 public class RestUpgradeSynchronizerTest extends AbstractInfinispanTest {
@@ -48,7 +46,7 @@ public class RestUpgradeSynchronizerTest extends AbstractInfinispanTest {
       sourceServer = RestTestingUtil.startRestServer(sourceContainer);
 
       ConfigurationBuilder targetConfigurationBuilder = TestCacheManagerFactory.getDefaultCacheConfiguration(false);
-      targetConfigurationBuilder.loaders().addStore(RestCacheStoreConfigurationBuilder.class).host("localhost").port(sourceServer.getPort())
+      targetConfigurationBuilder.persistence().addStore(RestCacheStoreConfigurationBuilder.class).host("localhost").port(sourceServer.getPort())
             .path("/rest/" + BasicCacheContainer.DEFAULT_CACHE_NAME).metadataHelper(MimeMetadataHelper.class).locking().isolationLevel(IsolationLevel.NONE);
 
       targetContainer = TestCacheManagerFactory.createCacheManager(targetConfigurationBuilder);
@@ -79,8 +77,6 @@ public class RestUpgradeSynchronizerTest extends AbstractInfinispanTest {
       assertEquals(sourceServerCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_STORE).size(), targetServerCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_STORE).size());
 
       targetUpgradeManager.disconnectSource("rest");
-      CacheLoaderManager loaderManager = targetServerCache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
-      assertFalse(loaderManager.isEnabled());
    }
 
    @BeforeMethod

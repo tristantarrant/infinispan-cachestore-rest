@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.persistence.spi.MarshalledEntry;
 
 /**
  * MetadataHelper
@@ -13,7 +14,7 @@ import org.infinispan.metadata.Metadata;
  */
 public interface MetadataHelper {
 
-   String getContentType(InternalCacheEntry entry);
+   String getContentType(MarshalledEntry entry);
 
    Metadata buildMetadata(String contentType,long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit);
 }
