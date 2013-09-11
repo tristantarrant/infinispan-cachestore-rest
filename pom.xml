@@ -35,13 +35,20 @@
    <packaging>bundle</packaging>
    <name>Infinispan REST CacheStore</name>
    <description>Infinispan REST CacheStore</description>
+   
    <properties>
+      <version.httpclient>4.2.4</version.httpclient>
    </properties>
 
    <dependencies>
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.httpcomponents</groupId>
+         <artifactId>httpclient</artifactId>
+         <version>${version.httpclient}</version>
       </dependency>
       <dependency>
          <groupId>${project.groupId}</groupId>

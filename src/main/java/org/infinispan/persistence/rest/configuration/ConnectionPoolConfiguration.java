@@ -10,18 +10,16 @@ public class ConnectionPoolConfiguration {
    private final int connectionTimeout;
    private final int maxConnectionsPerHost;
    private final int maxTotalConnections;
-   private final int receiveBufferSize;
-   private final int sendBufferSize;
+   private final int bufferSize;
    private final int socketTimeout;
    private final boolean tcpNoDelay;
 
-   ConnectionPoolConfiguration(int connectionTimeout, int maxConnectionsPerHost, int maxTotalConnections, int receiveBufferSize, int sendBufferSize, int socketTimeout,
+   ConnectionPoolConfiguration(int connectionTimeout, int maxConnectionsPerHost, int maxTotalConnections, int bufferSize, int socketTimeout,
          boolean tcpNoDelay) {
       this.connectionTimeout = connectionTimeout;
       this.maxConnectionsPerHost = maxConnectionsPerHost;
       this.maxTotalConnections = maxTotalConnections;
-      this.receiveBufferSize = receiveBufferSize;
-      this.sendBufferSize = sendBufferSize;
+      this.bufferSize = bufferSize;
       this.socketTimeout = socketTimeout;
       this.tcpNoDelay = tcpNoDelay;
    }
@@ -38,12 +36,8 @@ public class ConnectionPoolConfiguration {
       return maxTotalConnections;
    }
 
-   public int receiveBufferSize() {
-      return receiveBufferSize;
-   }
-
-   public int sendBufferSize() {
-      return sendBufferSize;
+   public int bufferSize() {
+      return bufferSize;
    }
 
    public int socketTimeout() {
@@ -57,7 +51,7 @@ public class ConnectionPoolConfiguration {
    @Override
    public String toString() {
       return "ConnectionPoolConfiguration [connectionTimeout=" + connectionTimeout + ", maxConnectionsPerHost=" + maxConnectionsPerHost + ", maxTotalConnections="
-            + maxTotalConnections + ", receiveBufferSize=" + receiveBufferSize + ", sendBufferSize=" + sendBufferSize + ", socketTimeout=" + socketTimeout + ", tcpNoDelay="
+            + maxTotalConnections + ", bufferSize=" + bufferSize + ", socketTimeout=" + socketTimeout + ", tcpNoDelay="
             + tcpNoDelay + "]";
    }
 }

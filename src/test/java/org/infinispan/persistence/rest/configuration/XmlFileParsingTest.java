@@ -37,8 +37,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(10000, connectionPool.connectionTimeout());
       assertEquals(10, connectionPool.maxConnectionsPerHost());
       assertEquals(10, connectionPool.maxTotalConnections());
-      assertEquals(20000, connectionPool.receiveBufferSize());
-      assertEquals(20000, connectionPool.sendBufferSize());
+      assertEquals(20000, connectionPool.bufferSize());
       assertEquals(10000, connectionPool.socketTimeout());
       assertTrue(connectionPool.tcpNoDelay());
       assertFalse(store.async().enabled());

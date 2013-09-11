@@ -1,18 +1,27 @@
 package org.infinispan.persistence.rest;
 
 import net.jcip.annotations.ThreadSafe;
+
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.persistence.rest.configuration.ConnectionPoolConfiguration;
@@ -33,7 +42,6 @@ import org.infinispan.util.logging.LogFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -61,11 +69,12 @@ public class RestStore implements AdvancedLoadWriteStore {
    private HttpClient httpClient;
    private InternalEntryFactory iceFactory;
    private MarshallingTwoWayKey2StringMapper key2StringMapper;
-   private MultiThreadedHttpConnectionManager connectionManager;
+   private PoolingClientConnectionManager connectionManager;
    private String path;
    private MetadataHelper metadataHelper;
    private URLCodec urlCodec = new URLCodec();
    private InitializationContext ctx;
+   private HttpHost httpHost;
 
 
    @Override
@@ -79,25 +88,21 @@ public class RestStore implements AdvancedLoadWriteStore {
       if (iceFactory == null) {
          iceFactory = ctx.getCache().getAdvancedCache().getComponentRegistry().getComponent(InternalEntryFactory.class);
       }
-      connectionManager = new MultiThreadedHttpConnectionManager();
+      connectionManager = new PoolingClientConnectionManager();
 
-      HttpConnectionManagerParams params = new HttpConnectionManagerParams();
       ConnectionPoolConfiguration pool = configuration.connectionPool();
-      params.setConnectionTimeout(pool.connectionTimeout());
-      params.setDefaultMaxConnectionsPerHost(pool.maxConnectionsPerHost());
-      params.setMaxTotalConnections(pool.maxTotalConnections());
-      if (pool.receiveBufferSize() > 0) {
-         params.setReceiveBufferSize(pool.receiveBufferSize());
-      }
-      if (pool.sendBufferSize() > 0) {
-         params.setSendBufferSize(pool.sendBufferSize());
-      }
-      params.setSoTimeout(pool.socketTimeout());
-      params.setTcpNoDelay(pool.tcpNoDelay());
-      connectionManager.setParams(params);
+      connectionManager.setDefaultMaxPerRoute(pool.maxConnectionsPerHost());
+      connectionManager.setMaxTotal(pool.maxTotalConnections());
 
-      httpClient = new HttpClient(connectionManager);
-      httpClient.getHostConfiguration().setHost(configuration.host(), configuration.port());
+      HttpParams params = new BasicHttpParams();
+      params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, pool.connectionTimeout());
+      params.setParameter(CoreConnectionPNames.SO_TIMEOUT,  pool.socketTimeout());
+      params.setParameter(CoreConnectionPNames.TCP_NODELAY, pool.tcpNoDelay());
+      params.setParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, pool.bufferSize());
+
+      httpClient = new DefaultHttpClient(connectionManager, params);
+
+      httpHost = new HttpHost(configuration.host(), configuration.port());
 
       this.key2StringMapper = Util.getInstance(configuration.key2StringMapper(), ctx.getCache().getAdvancedCache().getClassLoader());
       this.key2StringMapper.setMarshaller(ctx.getMarshaller());
@@ -123,7 +128,7 @@ public class RestStore implements AdvancedLoadWriteStore {
       this.iceFactory = iceFactory;
    }
 
-   private String keyToUri(Object key)   {
+   private String keyToUri(Object key) {
       try {
          return path + urlCodec.encode(key2StringMapper.getStringMapping(key));
       } catch (EncoderException e) {
@@ -149,62 +154,62 @@ public class RestStore implements AdvancedLoadWriteStore {
 
    @Override
    public void write(MarshalledEntry entry) {
-      PutMethod put = new PutMethod(keyToUri(entry.getKey()));
+      HttpPut put = new HttpPut(keyToUri(entry.getKey()));
 
       InternalMetadata metadata = entry.getMetadata();
       if (metadata != null && metadata.expiryTime() > -1) {
-         put.setRequestHeader(TIME_TO_LIVE_SECONDS, Long.toString(timeoutToSeconds(metadata.lifespan())));
-         put.setRequestHeader(MAX_IDLE_TIME_SECONDS, Long.toString(timeoutToSeconds(metadata.maxIdle())));
+         put.addHeader(TIME_TO_LIVE_SECONDS, Long.toString(timeoutToSeconds(metadata.lifespan())));
+         put.addHeader(MAX_IDLE_TIME_SECONDS, Long.toString(timeoutToSeconds(metadata.maxIdle())));
       }
 
       try {
          String contentType = metadataHelper.getContentType(entry);
-         put.setRequestEntity(new ByteArrayRequestEntity(marshall(contentType, entry), contentType));
-         httpClient.executeMethod(put);
+         put.setEntity(new ByteArrayEntity(marshall(contentType, entry), ContentType.create(contentType)));
+         httpClient.execute(httpHost, put);
       } catch (Exception e) {
          throw new CacheLoaderException(e);
       } finally {
-         put.releaseConnection();
+         put.abort();
       }
    }
 
    @Override
-   public void clear()   {
-      DeleteMethod del = new DeleteMethod(path);
+   public void clear() {
+      HttpDelete del = new HttpDelete(path);
       try {
-         httpClient.executeMethod(del);
-         discardBody(del.getResponseBodyAsStream());
+         HttpResponse response = httpClient.execute(httpHost, del);
+         EntityUtils.consume(response.getEntity());
       } catch (Exception e) {
          throw new CacheLoaderException(e);
       } finally {
-         del.releaseConnection();
+         del.abort();
       }
    }
 
    @Override
    public boolean delete(Object key) {
-      DeleteMethod del = new DeleteMethod(keyToUri(key));
+      HttpDelete del = new HttpDelete(keyToUri(key));
       try {
-         int status = httpClient.executeMethod(del);
-         discardBody(del.getResponseBodyAsStream());
-         return isSuccessful(status);
+         HttpResponse response = httpClient.execute(httpHost, del);
+         EntityUtils.consume(response.getEntity());
+         return isSuccessful(response.getStatusLine().getStatusCode());
       } catch (Exception e) {
          throw new CacheLoaderException(e);
       } finally {
-         del.releaseConnection();
+         del.abort();
       }
    }
 
    @Override
-   public MarshalledEntry load(Object key)   {
-      GetMethod get = new GetMethod(keyToUri(key));
+   public MarshalledEntry load(Object key) {
+      HttpGet get = new HttpGet(keyToUri(key));
       try {
-         int status = httpClient.executeMethod(get);
-         switch (status) {
+         HttpResponse response = httpClient.execute(httpHost, get);
+         switch (response.getStatusLine().getStatusCode()) {
          case HttpStatus.SC_OK:
-            String contentType = get.getResponseHeader(HttpHeaders.CONTENT_TYPE).getValue();
-            long ttl = timeHeaderToSeconds(get.getResponseHeader(TIME_TO_LIVE_SECONDS));
-            long maxidle = timeHeaderToSeconds(get.getResponseHeader(MAX_IDLE_TIME_SECONDS));
+            String contentType = response.getFirstHeader(HttpHeaders.CONTENT_TYPE).getValue();
+            long ttl = timeHeaderToSeconds(response.getFirstHeader(TIME_TO_LIVE_SECONDS));
+            long maxidle = timeHeaderToSeconds(response.getFirstHeader(MAX_IDLE_TIME_SECONDS));
             Metadata metadata = metadataHelper.buildMetadata(contentType, ttl, TimeUnit.SECONDS, maxidle, TimeUnit.SECONDS);
             InternalMetadata internalMetadata;
             if (metadata.maxIdle() > -1 || metadata.lifespan() > -1) {
@@ -213,19 +218,19 @@ public class RestStore implements AdvancedLoadWriteStore {
             } else {
                internalMetadata = new InternalMetadataImpl(metadata, -1, -1);
             }
-
-            return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, unmarshall(contentType, get.getResponseBody()), internalMetadata);
+            byte[] bytes = EntityUtils.toByteArray(response.getEntity());
+            return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, unmarshall(contentType, bytes), internalMetadata);
             case HttpStatus.SC_NOT_FOUND:
             return null;
          default:
-            throw log.httpError(get.getStatusText());
+            throw log.httpError(response.getStatusLine().toString());
          }
       } catch (IOException e) {
          throw log.httpError(e);
       } catch (Exception e) {
          throw new CacheLoaderException(e);
       } finally {
-         get.releaseConnection();
+         get.abort();
       }
    }
 
@@ -245,15 +250,16 @@ public class RestStore implements AdvancedLoadWriteStore {
 
    @Override
    public void process(KeyFilter keyFilter, final CacheLoaderTask cacheLoaderTask, Executor executor, boolean loadValue, boolean loadMetadata) {
-      GetMethod get = new GetMethod(path + "?global");
-      get.addRequestHeader("Accept", "text/plain");
+      HttpGet get = new HttpGet(path + "?global");
+      get.addHeader(HttpHeaders.ACCEPT, "text/plain");
       try {
-         httpClient.executeMethod(get);
+         HttpResponse response = httpClient.execute(httpHost, get);
+         HttpEntity entity = response.getEntity();
          int batchSize = 1000;
          ExecutorCompletionService ecs = new ExecutorCompletionService(executor);
          int tasks = 0;
          final TaskContext taskContext = new TaskContextImpl();
-         BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream(), get.getResponseCharSet()));
+         BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
          Set<String> entries = new HashSet<String>(batchSize);
          for (String key = reader.readLine(); key != null; key = reader.readLine()) {
             if (keyFilter == null || keyFilter.shouldLoadKey(key))
@@ -304,12 +310,13 @@ public class RestStore implements AdvancedLoadWriteStore {
 
    @Override
    public int size() {
-      GetMethod get = new GetMethod(path + "?global");
-      get.addRequestHeader("Accept", "text/plain");
+      HttpGet get = new HttpGet(path + "?global");
+      get.addHeader(HttpHeaders.ACCEPT, "text/plain");
 
       try {
-         httpClient.executeMethod(get);
-         BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream(), get.getResponseCharSet()));
+         HttpResponse response = httpClient.execute(httpHost, get);
+         HttpEntity entity = response.getEntity();
+         BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
          int count = 0;
          while (reader.readLine() != null)
             count++;
@@ -330,10 +337,4 @@ public class RestStore implements AdvancedLoadWriteStore {
       return status >= 200 && status < 300;
    }
 
-   private void discardBody(InputStream is) throws IOException {
-      if (is != null) {
-         while (is.read() != -1)
-            ;
-      }
-   }
 }

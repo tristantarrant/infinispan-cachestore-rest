@@ -97,20 +97,14 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="receiveBufferSize" type="xs:int" default="-1">
+    <xs:attribute name="bufferSize" type="xs:int" default="8192">
       <xs:annotation>
         <xs:documentation>
-          Sets a global limit on the number persistent connections that can be in circulation within the combined set of servers. When non-positive, there is no limit to the total number of persistent connections in circulation. When maxTotal is exceeded, all connections pools are exhausted. The default setting for this parameter is -1 (no limit). 
+          Sets the size of the buffer used to receive/transmit data over the HTTP connection. Defaults to 8192. 
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="sendBufferSize" type="xs:int" default="1">
-      <xs:annotation>
-        <xs:documentation>
-          Sets a target value for the minimum number of idle connections (per server) that should always be available. If this parameter is set to a positive number and timeBetweenEvictionRunsMillis > 0, each time the idle connection eviction thread runs, it will try to create enough idle instances so that there will be minIdle idle instances available for each server. The default setting for this parameter is 1. 
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    
   </xs:complexType>
 </xs:schema>
 

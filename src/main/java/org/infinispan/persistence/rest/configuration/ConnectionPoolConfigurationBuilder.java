@@ -32,8 +32,7 @@ public class ConnectionPoolConfigurationBuilder extends AbstractRestStoreConfigu
    private int connectionTimeout = 60000;
    private int maxConnectionsPerHost = 4;
    private int maxTotalConnections = 20;
-   private int receiveBufferSize;
-   private int sendBufferSize;
+   private int bufferSize = 8192;
    private int socketTimeout = 60000;
    private boolean tcpNoDelay = true;
 
@@ -59,13 +58,8 @@ public class ConnectionPoolConfigurationBuilder extends AbstractRestStoreConfigu
       return this;
    }
 
-   public ConnectionPoolConfigurationBuilder receiveBufferSize(int receiveBufferSize) {
-      this.receiveBufferSize = receiveBufferSize;
-      return this;
-   }
-
-   public ConnectionPoolConfigurationBuilder sendBufferSize(int sendBufferSize) {
-      this.sendBufferSize = sendBufferSize;
+   public ConnectionPoolConfigurationBuilder bufferSize(int bufferSize) {
+      this.bufferSize = bufferSize;
       return this;
    }
 
@@ -85,7 +79,7 @@ public class ConnectionPoolConfigurationBuilder extends AbstractRestStoreConfigu
 
    @Override
    public ConnectionPoolConfiguration create() {
-      return new ConnectionPoolConfiguration(connectionTimeout, maxConnectionsPerHost, maxTotalConnections, receiveBufferSize, sendBufferSize, socketTimeout, tcpNoDelay);
+      return new ConnectionPoolConfiguration(connectionTimeout, maxConnectionsPerHost, maxTotalConnections, bufferSize, socketTimeout, tcpNoDelay);
    }
 
    @Override
@@ -93,8 +87,7 @@ public class ConnectionPoolConfigurationBuilder extends AbstractRestStoreConfigu
       this.connectionTimeout = template.connectionTimeout();
       this.maxConnectionsPerHost = template.maxConnectionsPerHost();
       this.maxTotalConnections = template.maxTotalConnections();
-      this.receiveBufferSize = template.receiveBufferSize();
-      this.sendBufferSize = template.sendBufferSize();
+      this.bufferSize = template.bufferSize();
       this.socketTimeout = template.socketTimeout();
       this.tcpNoDelay = template.tcpNoDelay();
       return this;

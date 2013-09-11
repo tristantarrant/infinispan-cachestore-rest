@@ -87,12 +87,8 @@ public class RestStoreConfigurationParser60 implements ConfigurationParser {
             builder.maxTotalConnections(Integer.parseInt(value));
             break;
          }
-         case RECEIVE_BUFFER_SIZE: {
-            builder.receiveBufferSize(Integer.parseInt(value));
-            break;
-         }
-         case SEND_BUFFER_SIZE: {
-            builder.sendBufferSize(Integer.parseInt(value));
+         case BUFFER_SIZE: {
+            builder.bufferSize(Integer.parseInt(value));
             break;
          }
          case SOCKET_TIMEOUT:{

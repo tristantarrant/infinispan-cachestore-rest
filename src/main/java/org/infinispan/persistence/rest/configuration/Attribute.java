@@ -14,6 +14,7 @@ public enum Attribute {
    UNKNOWN(null),
 
    APPEND_CACHE_NAME_TO_PATH("appendCacheNameToPath"),
+   BUFFER_SIZE("bufferSize"),
    CONNECTION_TIMEOUT("connectionTimeout"),
    HOST("host"),
    KEY_TO_STRING_MAPPER("key2StringMapper"),
@@ -21,8 +22,6 @@ public enum Attribute {
    MAX_TOTAL_CONNECTIONS("maxTotalConnections"),
    PATH("path"),
    PORT("port"),
-   RECEIVE_BUFFER_SIZE("receiveBufferSize"),
-   SEND_BUFFER_SIZE("sendBufferSize"),
    SOCKET_TIMEOUT("socketTimeout"),
    TCP_NO_DELAY("tcpNoDelay"),
    ;
