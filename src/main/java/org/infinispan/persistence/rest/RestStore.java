@@ -1,4 +1,4 @@
-package org.infinispan.loaders.rest;
+package org.infinispan.persistence.rest;
 
 import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.codec.EncoderException;
@@ -15,10 +15,10 @@ import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.http.HttpHeaders;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.InternalEntryFactory;
-import org.infinispan.loaders.rest.configuration.ConnectionPoolConfiguration;
-import org.infinispan.loaders.rest.configuration.RestStoreConfiguration;
-import org.infinispan.loaders.rest.logging.Log;
-import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.persistence.rest.configuration.ConnectionPoolConfiguration;
+import org.infinispan.persistence.rest.configuration.RestStoreConfiguration;
+import org.infinispan.persistence.rest.logging.Log;
+import org.infinispan.persistence.rest.metadata.MetadataHelper;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.metadata.InternalMetadataImpl;
@@ -288,7 +288,7 @@ public class RestStore implements AdvancedLoadWriteStore {
                if (taskContext.isStopped())
                   break;
                if (!loadEntry && !loadMetadata) {
-                  cacheLoaderTask.processEntry(ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object)null, null), taskContext);
+                  cacheLoaderTask.processEntry(ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object) null, null), taskContext);
                } else {
                   cacheLoaderTask.processEntry(load(key), taskContext);
                }

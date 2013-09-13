@@ -1,16 +1,16 @@
-package org.infinispan.loaders.rest.configuration;
+package org.infinispan.persistence.rest.configuration;
 
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.loaders.rest.logging.Log;
-import org.infinispan.loaders.rest.metadata.EmbeddedMetadataHelper;
-import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.persistence.rest.logging.Log;
+import org.infinispan.persistence.rest.metadata.EmbeddedMetadataHelper;
+import org.infinispan.persistence.rest.metadata.MetadataHelper;
 import org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper;
 import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.util.logging.LogFactory;
 
 /**
- * RestStoreConfigurationBuilder. Configures a {@link org.infinispan.loaders.rest.RestStore}
+ * RestStoreConfigurationBuilder. Configures a {@link org.infinispan.persistence.rest.RestStore}
  *
  * @author Tristan Tarrant
  * @since 6.0

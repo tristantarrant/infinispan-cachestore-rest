@@ -41,10 +41,11 @@
               </xs:documentation>
             </xs:annotation>
           </xs:attribute>
-          <xs:attribute name="key2StringMapper" type="xs:string" default="org.infinispan.loaders.keymappers.MarshalledValueOrPrimitiveMapper">
+          <xs:attribute name="key2StringMapper" type="xs:string" default="org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper">
             <xs:annotation>
               <xs:documentation>
-                The name of a class to use for converting keys to strings. Defaults to org.infinispan.loaders.keymappers.MarshalledValueOrPrimitiveMapper
+                 The name of a class to use for converting keys to strings. Defaults to
+                 org.infinispan.persistence.keymappers.MarshalledValueOrPrimitiveMapper
               </xs:documentation>
             </xs:annotation>
           </xs:attribute>

@@ -1,7 +1,7 @@
-package org.infinispan.loaders.rest.configuration;
+package org.infinispan.persistence.rest.configuration;
 
 import org.infinispan.configuration.cache.AbstractStoreConfigurationChildBuilder;
-import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.persistence.rest.metadata.MetadataHelper;
 import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 
 /**

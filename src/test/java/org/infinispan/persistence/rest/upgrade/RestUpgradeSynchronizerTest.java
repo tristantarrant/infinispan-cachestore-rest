@@ -1,4 +1,4 @@
-package org.infinispan.loaders.rest.upgrade;
+package org.infinispan.persistence.rest.upgrade;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -10,9 +10,8 @@ import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
-import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
-import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
-import org.infinispan.loaders.rest.metadata.MimeMetadataHelper;
+import org.infinispan.persistence.rest.configuration.RestStoreConfigurationBuilder;
+import org.infinispan.persistence.rest.metadata.MimeMetadataHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.rest.EmbeddedRestServer;
 import org.infinispan.rest.RestTestingUtil;
@@ -28,7 +27,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.AssertJUnit.assertEquals;
 
-@Test(testName = "loaders.rest.upgrade.RestUpgradeSynchronizerTest", groups = "functional")
+@Test(testName = "persistence.rest.upgrade.RestUpgradeSynchronizerTest", groups = "functional")
 public class RestUpgradeSynchronizerTest extends AbstractInfinispanTest {
 
    private EmbeddedRestServer sourceServer;

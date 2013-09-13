@@ -1,4 +1,4 @@
-package org.infinispan.loaders.rest.metadata;
+package org.infinispan.persistence.rest.metadata;
 
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadataImpl;

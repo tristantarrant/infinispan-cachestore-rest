@@ -1,11 +1,11 @@
-package org.infinispan.loaders.rest.configuration;
+package org.infinispan.persistence.rest.configuration;
 
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.configuration.ConfigurationFor;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
-import org.infinispan.loaders.rest.RestStore;
+import org.infinispan.persistence.rest.RestStore;
 
 import java.util.Properties;
 

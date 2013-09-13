@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.infinispan.loaders.rest.logging;
+package org.infinispan.persistence.rest.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 

@@ -1,4 +1,4 @@
-package org.infinispan.loaders.rest.configuration;
+package org.infinispan.persistence.rest.configuration;
 
 /**
  * ConnectionPoolConfiguration.

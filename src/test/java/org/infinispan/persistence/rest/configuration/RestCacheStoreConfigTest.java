@@ -1,7 +1,7 @@
-package org.infinispan.loaders.rest.configuration;
+package org.infinispan.persistence.rest.configuration;
 
 import org.infinispan.Cache;
-import org.infinispan.loaders.rest.RestStore;
+import org.infinispan.persistence.rest.RestStore;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.spi.CacheLoader;
 import org.infinispan.rest.EmbeddedRestServer;
@@ -23,7 +23,7 @@ import static org.testng.AssertJUnit.assertSame;
  * @author Tristan Tarrant
  * @since 6.0
  */
-@Test(testName = "loaders.remote.RestCacheStoreConfigTest", groups = "functional")
+@Test(testName = "persistence.remote.RestCacheStoreConfigTest", groups = "functional")
 public class RestCacheStoreConfigTest {
 
    public static final String CACHE_LOADER_CONFIG = "rest-cl-config.xml";

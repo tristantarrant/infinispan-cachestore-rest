@@ -1,4 +1,4 @@
-package org.infinispan.loaders.rest.configuration;
+package org.infinispan.persistence.rest.configuration;
 
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
@@ -14,7 +14,7 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
-@Test(groups = "unit", testName = "loaders.rest.configuration.XmlFileParsingTest")
+@Test(groups = "unit", testName = "persistence.rest.configuration.XmlFileParsingTest")
 public class XmlFileParsingTest extends AbstractInfinispanTest {
    public static final String CACHE_LOADER_CONFIG = "rest-cl-config.xml";
    private EmbeddedCacheManager cacheManager;

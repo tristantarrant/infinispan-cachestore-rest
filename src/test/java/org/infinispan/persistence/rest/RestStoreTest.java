@@ -1,4 +1,4 @@
-package org.infinispan.loaders.rest;
+package org.infinispan.persistence.rest;
 
 import org.infinispan.commons.io.ByteBufferFactoryImpl;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -6,7 +6,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.InternalEntryFactoryImpl;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
+import org.infinispan.persistence.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.MarshalledEntryFactoryImpl;
 import org.infinispan.persistence.BaseStoreTest;
@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
  * @author Tristan Tarrant
  * @since 6.0
  */
-@Test(testName = "loaders.remote.RemoteCacheStoreTest", groups = "functional")
+@Test(testName = "persistence.remote.RemoteCacheStoreTest", groups = "functional")
 public class RestStoreTest extends BaseStoreTest {
 
    private static final String REMOTE_CACHE = "remote-cache";

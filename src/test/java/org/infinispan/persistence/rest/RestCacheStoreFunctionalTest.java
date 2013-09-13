@@ -1,8 +1,8 @@
-package org.infinispan.loaders.rest;
+package org.infinispan.persistence.rest;
 
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
+import org.infinispan.persistence.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.BaseStoreFunctionalTest;
 import org.infinispan.rest.EmbeddedRestServer;
@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
  * @author Tristan Tarrant
  * @since 6.0
  */
-@Test(testName = "loaders.remote.RestCacheStoreFunctionalTest", groups = "functional")
+@Test(testName = "persistence.remote.RestCacheStoreFunctionalTest", groups = "functional")
 public class RestCacheStoreFunctionalTest extends BaseStoreFunctionalTest {
    private EmbeddedCacheManager localCacheManager;
    private EmbeddedRestServer restServer;
