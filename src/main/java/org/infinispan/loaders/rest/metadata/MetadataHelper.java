@@ -2,9 +2,8 @@ package org.infinispan.loaders.rest.metadata;
 
 import java.util.concurrent.TimeUnit;
 
-import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.persistence.spi.MarshalledEntry;
 
 /**
  * MetadataHelper

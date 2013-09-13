@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An enumeration of all the recognized XML element local names for the {@link RemoteCacheStore}
+ * An enumeration of all the recognized XML element local names for the {@link org.infinispan.persistence.remote.RemoteStore}
  *
  * @author Tristan Tarrant
  * @since 6.0

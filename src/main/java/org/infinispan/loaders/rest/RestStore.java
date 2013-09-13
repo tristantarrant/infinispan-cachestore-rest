@@ -19,17 +19,16 @@ import org.infinispan.loaders.rest.configuration.ConnectionPoolConfiguration;
 import org.infinispan.loaders.rest.configuration.RestStoreConfiguration;
 import org.infinispan.loaders.rest.logging.Log;
 import org.infinispan.loaders.rest.metadata.MetadataHelper;
+import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.metadata.InternalMetadataImpl;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.persistence.CacheLoaderException;
-import org.infinispan.persistence.MarshalledEntryImpl;
 import org.infinispan.persistence.PersistenceUtil;
 import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
-import org.infinispan.persistence.spi.MarshalledEntry;
 import org.infinispan.util.logging.LogFactory;
 
 import java.io.BufferedReader;
@@ -215,7 +214,7 @@ public class RestStore implements AdvancedLoadWriteStore {
                internalMetadata = new InternalMetadataImpl(metadata, -1, -1);
             }
 
-            return new MarshalledEntryImpl(key, unmarshall(contentType, get.getResponseBody()), internalMetadata, ctx.getMarshaller());
+            return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, unmarshall(contentType, get.getResponseBody()), internalMetadata);
             case HttpStatus.SC_NOT_FOUND:
             return null;
          default:
@@ -289,7 +288,7 @@ public class RestStore implements AdvancedLoadWriteStore {
                if (taskContext.isStopped())
                   break;
                if (!loadEntry && !loadMetadata) {
-                  cacheLoaderTask.processEntry(new MarshalledEntryImpl(key, (Object)null, null, ctx.getMarshaller()), taskContext);
+                  cacheLoaderTask.processEntry(ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object)null, null), taskContext);
                } else {
                   cacheLoaderTask.processEntry(load(key), taskContext);
                }

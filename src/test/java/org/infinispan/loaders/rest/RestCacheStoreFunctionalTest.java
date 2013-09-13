@@ -4,7 +4,7 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.persistence.BaseCacheStoreFunctionalTest;
+import org.infinispan.persistence.BaseStoreFunctionalTest;
 import org.infinispan.rest.EmbeddedRestServer;
 import org.infinispan.rest.RestTestingUtil;
 import org.infinispan.test.TestingUtil;
@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
  * @since 6.0
  */
 @Test(testName = "loaders.remote.RestCacheStoreFunctionalTest", groups = "functional")
-public class RestCacheStoreFunctionalTest extends BaseCacheStoreFunctionalTest {
+public class RestCacheStoreFunctionalTest extends BaseStoreFunctionalTest {
    private EmbeddedCacheManager localCacheManager;
    private EmbeddedRestServer restServer;
 

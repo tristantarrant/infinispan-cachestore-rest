@@ -1,5 +1,6 @@
 package org.infinispan.loaders.rest;
 
+import org.infinispan.commons.io.ByteBufferFactoryImpl;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.container.InternalEntryFactoryImpl;
@@ -7,8 +8,9 @@ import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.loaders.rest.configuration.RestStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.persistence.BaseCacheStoreTest;
-import org.infinispan.persistence.DummyLoaderContext;
+import org.infinispan.marshall.core.MarshalledEntryFactoryImpl;
+import org.infinispan.persistence.BaseStoreTest;
+import org.infinispan.persistence.DummyInitializationContext;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.rest.EmbeddedRestServer;
 import org.infinispan.rest.RestTestingUtil;
@@ -23,7 +25,7 @@ import org.testng.annotations.Test;
  * @since 6.0
  */
 @Test(testName = "loaders.remote.RemoteCacheStoreTest", groups = "functional")
-public class RestStoreTest extends BaseCacheStoreTest {
+public class RestStoreTest extends BaseStoreTest {
 
    private static final String REMOTE_CACHE = "remote-cache";
    private EmbeddedCacheManager localCacheManager;
@@ -47,7 +49,8 @@ public class RestStoreTest extends BaseCacheStoreTest {
       storeConfigurationBuilder.connectionPool().maxTotalConnections(10).maxConnectionsPerHost(10);
       storeConfigurationBuilder.validate();
       RestStore restStore = new RestStore();
-      restStore.init(new DummyLoaderContext(storeConfigurationBuilder.create(), getCache(), getMarshaller()));
+      restStore.init(new DummyInitializationContext(storeConfigurationBuilder.create(), getCache(), getMarshaller(),
+                                                    new ByteBufferFactoryImpl(), new MarshalledEntryFactoryImpl(getMarshaller())));
       InternalEntryFactoryImpl iceFactory = new InternalEntryFactoryImpl();
       iceFactory.injectTimeService(TIME_SERVICE);
       restStore.setInternalCacheEntryFactory(iceFactory);
