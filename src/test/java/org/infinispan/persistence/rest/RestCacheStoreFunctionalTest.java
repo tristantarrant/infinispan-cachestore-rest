@@ -21,9 +21,6 @@ public class RestCacheStoreFunctionalTest extends BaseStoreFunctionalTest {
    private EmbeddedCacheManager localCacheManager;
    private EmbeddedRestServer restServer;
 
-
-
-
    @Override
    protected PersistenceConfigurationBuilder createCacheStoreConfig(PersistenceConfigurationBuilder loaders, boolean preload) {
       localCacheManager = TestCacheManagerFactory.createCacheManager();

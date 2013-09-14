@@ -249,14 +249,13 @@ public class RestStore implements AdvancedLoadWriteStore {
       get.addRequestHeader("Accept", "text/plain");
       try {
          httpClient.executeMethod(get);
-         int count = 0;
          int batchSize = 1000;
          ExecutorCompletionService ecs = new ExecutorCompletionService(executor);
          int tasks = 0;
          final TaskContext taskContext = new TaskContextImpl();
          BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream(), get.getResponseCharSet()));
          Set<String> entries = new HashSet<String>(batchSize);
-         for (String key = reader.readLine(); key != null; key = reader.readLine(), count++) {
+         for (String key = reader.readLine(); key != null; key = reader.readLine()) {
             if (keyFilter == null || keyFilter.shouldLoadKey(key))
                entries.add(key);
             if (entries.size() == batchSize) {
